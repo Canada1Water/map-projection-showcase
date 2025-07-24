@@ -38,10 +38,46 @@ A comprehensive web application showcasing different D3.js geographic projection
 
 ## Getting Started
 
-1. Open `index.html` in a modern web browser
-2. Select a projection from the dropdown menu
-3. Use the interactive controls to rotate and scale the projection
-4. Read about each projection's properties and use cases in the information panel
+### Running Locally
+
+Due to browser security restrictions with local files, you'll need to serve the application through a local web server:
+
+#### Option 1: Using Python (Recommended)
+```bash
+# Clone or download the repository
+cd map-projection-showcase
+
+# Start a local HTTP server
+python3 -m http.server 8000
+
+# Or use the npm script
+npm start
+```
+
+Then open your browser and navigate to: `http://localhost:8000`
+
+#### Option 2: Using Node.js
+```bash
+# Install a simple HTTP server globally
+npm install -g http-server
+
+# Navigate to the project directory
+cd map-projection-showcase
+
+# Start the server
+http-server -p 8000
+```
+
+#### Option 3: Using VS Code Live Server Extension
+1. Install the "Live Server" extension in VS Code
+2. Right-click on `index.html`
+3. Select "Open with Live Server"
+
+### Using the Application
+
+1. Select a projection from the dropdown menu
+2. Use the interactive controls to rotate and scale the projection
+3. Read about each projection's properties and use cases in the information panel
 
 ## Technical Details
 
