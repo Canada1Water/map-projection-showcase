@@ -43,7 +43,7 @@
 
         .controls-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
             margin-bottom: 15px;
         }
@@ -111,7 +111,7 @@
 
         .main-content {
             display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
+            grid-template-columns: 1fr 1.5fr 1fr;
             gap: 15px;
             align-items: start;
         }
@@ -121,7 +121,7 @@
             border-radius: 8px;
             box-shadow: 0 3px 5px rgba(0,0,0,0.1);
             padding: 15px;
-            min-height: 600px;
+            min-height: 500px;
         }
 
         .side-panel {
@@ -363,22 +363,7 @@
                 <button id="update-display" style="width: 100%; margin-top: 6px; font-size: 0.7rem; padding: 4px;">Update Display</button>
             </div>
 
-            <div class="control-panel">
-                <h3>Map Statistics</h3>
-                <div id="map-stats">
-                    <p><strong>Projection:</strong> <span id="current-projection">Natural Earth</span></p>
-                    <p><strong>Scope:</strong> <span id="current-scope">World</span></p>
-                    <p><strong>Countries Visible:</strong> <span id="visible-countries">~195</span></p>
-                    <p><strong>Distortion Type:</strong> <span id="distortion-type">Moderate</span></p>
-                </div>
-            </div>
 
-            <div class="control-panel">
-                <h3>Properties</h3>
-                <ul id="properties-list" style="font-size: 0.8rem; max-height: 120px; overflow-y: auto;">
-                    <li>Loading...</li>
-                </ul>
-            </div>
         </div>
 
         <div class="main-content">
@@ -388,6 +373,12 @@
                 <div id="projection-info">
                     <p>Loading projection information...</p>
                 </div>
+                
+                <!-- Properties moved here -->
+                <h3 style="margin-top: 20px;">Properties</h3>
+                <ul id="properties-list" style="max-height: 120px; overflow-y: auto;">
+                    <li>Loading...</li>
+                </ul>
             </div>
             
             <!-- Map in the center -->
@@ -400,6 +391,15 @@
                 <h3>Mathematical Formula</h3>
                 <div id="formula-section">
                     <p>Loading mathematical formula...</p>
+                </div>
+                
+                <!-- Map Statistics moved here -->
+                <h3 style="margin-top: 20px;">Map Statistics</h3>
+                <div id="map-stats">
+                    <p><strong>Projection:</strong> <span id="current-projection">Natural Earth</span></p>
+                    <p><strong>Scope:</strong> <span id="current-scope">World</span></p>
+                    <p><strong>Countries Visible:</strong> <span id="visible-countries">~195</span></p>
+                    <p><strong>Distortion Type:</strong> <span id="distortion-type">Moderate</span></p>
                 </div>
             </div>
         </div>
