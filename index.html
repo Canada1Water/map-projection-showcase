@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Geographic Projections with Country Data</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .control-panel {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+        }
+
+        .control-panel h3 {
+            margin-bottom: 8px;
+            color: #667eea;
+            font-size: 1rem;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            min-width: 70px;
+            font-size: 0.8rem;
+        }
+
+        select, input[type="range"], button {
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            padding: 0;
+            height: 18px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 0.75rem;
+            padding: 6px 12px;
+        }
+
+        button:hover {
+            background: #5a6fd8;
+        }
+
+        .value-display {
+            min-width: 35px;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 0.75rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 15px;
+            align-items: start;
+        }
+
+        .map-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+            min-height: 600px;
+        }
+
+        .side-panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+        }
+
+        .side-panel h3 {
+            color: #667eea;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 8px;
+        }
+
+        .map-header {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .map-header h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 6px;
+        }
+
+        .info-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .info-panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+        }
+
+        .info-panel h3 {
+            color: #667eea;
+            margin-bottom: 12px;
+            font-size: 1.2rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 8px;
+        }
+
+        #map {
+            width: 100%;
+            height: 520px;
+        }
+
+        .feature-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .feature-item {
+            padding: 5px;
+            margin: 2px 0;
+            background: #f8f9fa;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+
+        #formula-section {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }
+
+        .formula-description {
+            font-family: 'Segoe UI', sans-serif;
+            font-style: italic;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .formula-equation {
+            background: white;
+            padding: 8px;
+            margin: 6px 0;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+            font-size: 0.9rem;
+        }
+
+        .formula-variables {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        @media (max-width: 1200px) {
+            .controls-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .side-panel {
+                margin-bottom: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+            
+            .control-group label {
+                min-width: auto;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Geographic Projections Showcase - Interactive World Map with Real Country Data</h1>
+        </header>
+
+        <div class="controls-grid">
+            <div class="control-panel">
+                <h3>Projection Settings</h3>
+                <div class="control-group">
+                    <label for="projection-select">Projection:</label>
+                    <select id="projection-select">
+                        <option value="natural earth">Natural Earth</option>
+                        <option value="mercator">Mercator</option>
+                        <option value="orthographic">Orthographic</option>
+                        <option value="stereographic">Stereographic</option>
+                        <option value="equirectangular">Equirectangular</option>
+                        <option value="azimuthal equal area">Azimuthal Equal Area</option>
+                        <option value="azimuthal equidistant">Azimuthal Equidistant</option>
+                        <option value="albers">Albers Equal Area</option>
+                        <option value="conic equal area">Conic Equal Area</option>
+                        <option value="gnomonic">Gnomonic</option>
+                        <option value="mollweide">Mollweide</option>
+                        <option value="hammer">Hammer</option>
+                        <option value="eckert4">Eckert IV</option>
+                        <option value="robinson">Robinson</option>
+                        <option value="miller">Miller</option>
+                        <option value="sinusoidal">Sinusoidal</option>
+                        <option value="winkel tripel">Winkel Tripel</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="map-scope">Scope:</label>
+                    <select id="map-scope">
+                        <option value="world">World</option>
+                        <option value="usa">United States</option>
+                        <option value="europe">Europe</option>
+                        <option value="asia">Asia</option>
+                        <option value="africa">Africa</option>
+                        <option value="north america">North America</option>
+                        <option value="south america">South America</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <h3>Rotation Controls</h3>
+                <div class="control-group">
+                    <label for="rotation-lon">Longitude:</label>
+                    <input type="range" id="rotation-lon" min="-180" max="180" value="0" step="5">
+                    <span id="lon-value" class="value-display">0°</span>
+                </div>
+                <div class="control-group">
+                    <label for="rotation-lat">Latitude:</label>
+                    <input type="range" id="rotation-lat" min="-90" max="90" value="0" step="5">
+                    <span id="lat-value" class="value-display">0°</span>
+                </div>
+                <div class="control-group">
+                    <label for="rotation-roll">Roll:</label>
+                    <input type="range" id="rotation-roll" min="-180" max="180" value="0" step="5">
+                    <span id="roll-value" class="value-display">0°</span>
+                </div>
+                <button id="reset-rotation">Reset Rotation</button>
+            </div>
+
+            <div class="control-panel">
+                <h3>Display Options</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 0.75rem;">
+                    <div class="control-group" style="margin-bottom: 3px;">
+                        <label for="show-countries">Countries:</label>
+                        <input type="checkbox" id="show-countries" checked>
+                    </div>
+                    <div class="control-group" style="margin-bottom: 3px;">
+                        <label for="show-coastlines">Coastlines:</label>
+                        <input type="checkbox" id="show-coastlines" checked>
+                    </div>
+                    <div class="control-group" style="margin-bottom: 3px;">
+                        <label for="show-lakes">Lakes:</label>
+                        <input type="checkbox" id="show-lakes" checked>
+                    </div>
+                    <div class="control-group" style="margin-bottom: 3px;">
+                        <label for="show-ocean">Ocean:</label>
+                        <input type="checkbox" id="show-ocean" checked>
+                    </div>
+                    <div class="control-group" style="margin-bottom: 3px;">
+                        <label for="show-lataxis">Latitude Grid:</label>
+                        <input type="checkbox" id="show-lataxis" checked>
+                    </div>
+                    <div class="control-group" style="margin-bottom: 3px;">
+                        <label for="show-lonaxis">Longitude Grid:</label>
+                        <input type="checkbox" id="show-lonaxis" checked>
+                    </div>
+                    <div class="control-group" style="margin-bottom: 3px;">
+                        <label for="show-tissot">Tissot Circles:</label>
+                        <input type="checkbox" id="show-tissot">
+                    </div>
+                </div>
+                <button id="update-display" style="width: 100%; margin-top: 6px; font-size: 0.7rem; padding: 4px;">Update Display</button>
+            </div>
+
+            <div class="control-panel">
+                <h3>Map Statistics</h3>
+                <div id="map-stats">
+                    <p><strong>Projection:</strong> <span id="current-projection">Natural Earth</span></p>
+                    <p><strong>Scope:</strong> <span id="current-scope">World</span></p>
+                    <p><strong>Countries Visible:</strong> <span id="visible-countries">~195</span></p>
+                    <p><strong>Distortion Type:</strong> <span id="distortion-type">Moderate</span></p>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <h3>Properties</h3>
+                <ul id="properties-list" style="font-size: 0.8rem; max-height: 120px; overflow-y: auto;">
+                    <li>Loading...</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Projection description on the left -->
+            <div class="side-panel">
+                <h3 id="projection-name">Natural Earth</h3>
+                <div id="projection-info">
+                    <p>Loading projection information...</p>
+                </div>
+            </div>
+            
+            <!-- Map in the center -->
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+            
+            <!-- Mathematical formula on the right -->
+            <div class="side-panel">
+                <h3>Mathematical Formula</h3>
+                <div id="formula-section">
+                    <p>Loading mathematical formula...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+    <script src="projections-data.js?v=1"></script>
+    <script>
+        // Debug: Check if projectionData is loaded
+        console.log('Checking projectionData availability...');
+        console.log('typeof projectionData:', typeof projectionData);
+        if (typeof projectionData !== 'undefined') {
+            console.log('projectionData keys:', Object.keys(projectionData));
+            console.log('Sample projection:', projectionData.geoNaturalEarth1 ? 'Found' : 'Missing');
+        } else {
+            console.error('projectionData is undefined - file not loaded or has syntax error');
+        }
+        
+        // Wait for DOM to be ready and ensure all scripts are loaded
+        function initializeApp() {
+            console.log('Initializing app...');
+            console.log('Plotly available:', typeof Plotly !== 'undefined');
+            console.log('projectionData available:', typeof projectionData !== 'undefined');
+            
+            if (typeof Plotly === 'undefined') {
+                console.error('Plotly.js not loaded');
+                document.getElementById('map').innerHTML = '<p style="color: red; padding: 20px;">Error: Plotly.js failed to load.</p>';
+                return;
+            }
+            
+            if (typeof projectionData === 'undefined') {
+                console.error('projections-data.js not loaded');
+                document.getElementById('projection-info').innerHTML = '<p style="color: red;">Error: Projection data file not loaded. Please check that projections-data.js is available.</p>';
+                // Continue anyway with limited functionality
+            }
+            
+            try {
+                new AdvancedProjectionShowcase();
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                document.getElementById('map').innerHTML = '<p style="color: red; padding: 20px;">Error initializing application: ' + error.message + '</p>';
+            }
+        }
+        
+        class AdvancedProjectionShowcase {
+            constructor() {
+                console.log('Initializing Advanced Projection Showcase...');
+                
+                this.currentProjection = 'natural earth';
+                this.currentScope = 'world';
+                this.rotation = { lon: 0, lat: 0, roll: 0 };
+                this.displayOptions = {
+                    countries: true,
+                    coastlines: true,
+                    lakes: true,
+                    ocean: true,
+                    lataxis: true,
+                    lonaxis: true,
+                    tissot: false
+                };
+                this.lastTissotState = false; // Track Tissot circles state
+                this.mapDiv = document.getElementById('map');
+                this.updatingFromSlider = false; // Flag to prevent infinite loops
+                
+                this.initializeEventListeners();
+                this.createMap();
+                this.updateInfo();
+                
+                console.log('Initialization complete');
+            }
+            
+            createMap() {
+                console.log('Creating advanced map...');
+                
+                // Create a scattergeo map that properly supports all geographic features
+                const data = [{
+                    type: 'scattergeo',
+                    mode: 'markers',
+                    lat: [0], // Dummy data point to enable the map
+                    lon: [0],
+                    marker: {
+                        size: 0,
+                        opacity: 0
+                    },
+                    showlegend: false,
+                    hoverinfo: 'skip'
+                }];
+
+                // Add Tissot's Indicatrix circles if enabled
+                if (this.displayOptions.tissot) {
+                    data.push(this.createTissotCircles());
+                }
+                
+                const layout = {
+                    title: {
+                        text: `${this.getProjectionDisplayName(this.currentProjection)} Projection`,
+                        font: { size: 18, color: '#333' },
+                        x: 0.5
+                    },
+                    geo: {
+                        projection: {
+                            type: this.currentProjection,
+                            rotation: this.rotation
+                        },
+                        showland: true,
+                        landcolor: 'rgb(243, 243, 243)',
+                        showocean: this.displayOptions.ocean,
+                        oceancolor: 'rgb(230, 245, 255)',
+                        showlakes: this.displayOptions.lakes,
+                        lakecolor: 'rgb(173, 216, 230)',
+                        showrivers: false,
+                        showcountries: this.displayOptions.countries,
+                        countrycolor: 'rgb(204, 204, 204)',
+                        countrywidth: 1,
+                        showcoastlines: this.displayOptions.coastlines,
+                        coastlinecolor: 'rgb(150, 150, 150)',
+                        coastlinewidth: 1,
+                        showframe: false,
+                        bgcolor: 'rgba(0,0,0,0)',
+                        lataxis: {
+                            showgrid: this.displayOptions.lataxis,
+                            gridcolor: 'rgb(180, 180, 180)',
+                            gridwidth: 1,
+                            dtick: 30
+                        },
+                        lonaxis: {
+                            showgrid: this.displayOptions.lonaxis,
+                            gridcolor: 'rgb(180, 180, 180)',
+                            gridwidth: 1,
+                            dtick: 30
+                        }
+                    },
+                    margin: { t: 50, b: 0, l: 0, r: 0 },
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)'
+                };
+                
+                // Set scope
+                if (this.currentScope !== 'world') {
+                    layout.geo.scope = this.currentScope;
+                }
+                
+                // Apply projection-specific settings
+                this.applyProjectionSettings(layout);
+                
+                const config = {
+                    responsive: true,
+                    displayModeBar: true,
+                    modeBarButtonsToRemove: [
+                        'pan2d', 'select2d', 'lasso2d', 'autoScale2d', 
+                        'hoverClosestCartesian', 'hoverCompareCartesian'
+                    ],
+                    displaylogo: false,
+                    toImageButtonOptions: {
+                        format: 'png',
+                        filename: `${this.currentProjection}_projection`,
+                        height: 600,
+                        width: 1000,
+                        scale: 2
+                    },
+                    // Enable scroll zoom and interaction
+                    scrollZoom: true,
+                    doubleClick: 'reset'
+                };
+                
+                Plotly.newPlot(this.mapDiv, data, layout, config)
+                    .then(() => {
+                        console.log('Advanced map created successfully');
+                        this.updateStats();
+                        this.addMapEvents();
+                    })
+                    .catch(error => {
+                        console.error('Error creating map:', error);
+                    });
+            }
+            
+            addMapEvents() {
+                this.mapDiv.on('plotly_hover', (data) => {
+                    if (data.points && data.points[0]) {
+                        const point = data.points[0];
+                        console.log('Hovered on:', point);
+                    }
+                });
+                
+                this.mapDiv.on('plotly_click', (data) => {
+                    if (data.points && data.points[0]) {
+                        const point = data.points[0];
+                        console.log('Clicked on:', point);
+                    }
+                });
+                
+                // Listen for plotly relayout events (when user interacts with map)
+                this.mapDiv.on('plotly_relayout', (eventData) => {
+                    console.log('Plotly relayout event:', eventData);
+                    
+                    // Flag to prevent infinite loops
+                    if (this.updatingFromSlider) {
+                        return;
+                    }
+                    
+                    // Check for various possible rotation event structures
+                    let rotation = null;
+                    
+                    // Try different possible event data structures
+                    if (eventData && eventData['geo.projection.rotation']) {
+                        rotation = eventData['geo.projection.rotation'];
+                    } else if (eventData && eventData.geo && eventData.geo.projection && eventData.geo.projection.rotation) {
+                        rotation = eventData.geo.projection.rotation;
+                    }
+                    
+                    // Check for center updates (which Plotly sometimes uses instead of rotation)
+                    if (!rotation && eventData && eventData['geo.center']) {
+                        const center = eventData['geo.center'];
+                        rotation = {
+                            lon: -center.lon || 0,  // Negative because center is opposite of rotation
+                            lat: -center.lat || 0,
+                            roll: 0
+                        };
+                    }
+                    
+                    // Try to extract from individual geo properties
+                    if (!rotation && eventData) {
+                        const keys = Object.keys(eventData);
+                        const geoRotationKeys = keys.filter(key => key.includes('geo.projection.rotation'));
+                        
+                        if (geoRotationKeys.length > 0) {
+                            rotation = { lon: 0, lat: 0, roll: 0 };
+                            geoRotationKeys.forEach(key => {
+                                if (key.includes('.lon')) rotation.lon = eventData[key] || 0;
+                                if (key.includes('.lat')) rotation.lat = eventData[key] || 0;
+                                if (key.includes('.roll')) rotation.roll = eventData[key] || 0;
+                            });
+                        }
+                    }
+                    
+                    if (rotation) {
+                        console.log('Found rotation data:', rotation);
+                        
+                        // Update internal rotation state
+                        this.rotation.lon = rotation.lon || 0;
+                        this.rotation.lat = rotation.lat || 0;
+                        this.rotation.roll = rotation.roll || 0;
+                        
+                        // Update slider values and displays
+                        this.updateSliderValues();
+                    } else {
+                        // If no rotation found, try to get current state from the plot
+                        this.syncSlidersFromPlot();
+                    }
+                });
+                
+                // Also listen for plotly_restyle events
+                this.mapDiv.on('plotly_restyle', (eventData) => {
+                    console.log('Plotly restyle event:', eventData);
+                    if (!this.updatingFromSlider) {
+                        this.syncSlidersFromPlot();
+                    }
+                });
+            }
+            
+            updateSliderValues() {
+                // Update longitude slider
+                const lonSlider = document.getElementById('rotation-lon');
+                const lonDisplay = document.getElementById('lon-value');
+                if (lonSlider && lonDisplay) {
+                    lonSlider.value = this.rotation.lon;
+                    lonDisplay.textContent = Math.round(this.rotation.lon) + '°';
+                }
+                
+                // Update latitude slider
+                const latSlider = document.getElementById('rotation-lat');
+                const latDisplay = document.getElementById('lat-value');
+                if (latSlider && latDisplay) {
+                    latSlider.value = this.rotation.lat;
+                    latDisplay.textContent = Math.round(this.rotation.lat) + '°';
+                }
+                
+                // Update roll slider
+                const rollSlider = document.getElementById('rotation-roll');
+                const rollDisplay = document.getElementById('roll-value');
+                if (rollSlider && rollDisplay) {
+                    rollSlider.value = this.rotation.roll;
+                    rollDisplay.textContent = Math.round(this.rotation.roll) + '°';
+                }
+            }
+            
+            syncSlidersFromPlot() {
+                // Try to get current rotation state from the Plotly plot
+                try {
+                    const plotData = this.mapDiv.data;
+                    const plotLayout = this.mapDiv.layout;
+                    
+                    if (plotLayout && plotLayout.geo && plotLayout.geo.projection && plotLayout.geo.projection.rotation) {
+                        const rotation = plotLayout.geo.projection.rotation;
+                        
+                        this.rotation.lon = rotation.lon || 0;
+                        this.rotation.lat = rotation.lat || 0;
+                        this.rotation.roll = rotation.roll || 0;
+                        
+                        this.updateSliderValues();
+                        console.log('Synced sliders from plot layout:', this.rotation);
+                    }
+                } catch (error) {
+                    console.log('Could not sync sliders from plot:', error);
+                }
+            }
+            
+            createTissotCircles() {
+                // Generate a grid of Tissot indicatrix circles
+                const lats = [];
+                const lons = [];
+                
+                // Create circles at regular intervals (every 30 degrees)
+                for (let lat = -60; lat <= 60; lat += 30) {
+                    for (let lon = -150; lon <= 180; lon += 30) {
+                        // Generate points for each circle
+                        const numPoints = 36; // Points per circle
+                        const radius = 5; // Degrees radius for each circle
+                        
+                        for (let i = 0; i <= numPoints; i++) {
+                            const angle = (i / numPoints) * 2 * Math.PI;
+                            const circleLat = lat + radius * Math.sin(angle);
+                            const circleLon = lon + radius * Math.cos(angle) / Math.cos(lat * Math.PI / 180);
+                            
+                            // Clamp values to valid ranges
+                            if (Math.abs(circleLat) <= 85 && Math.abs(circleLon) <= 180) {
+                                lats.push(circleLat);
+                                lons.push(circleLon);
+                            }
+                        }
+                        
+                        // Add NaN to separate circles (creates line breaks)
+                        lats.push(null);
+                        lons.push(null);
+                    }
+                }
+                
+                return {
+                    type: 'scattergeo',
+                    mode: 'lines',
+                    lat: lats,
+                    lon: lons,
+                    line: {
+                        color: 'rgba(255, 0, 0, 0.7)',
+                        width: 2
+                    },
+                    showlegend: false,
+                    hoverinfo: 'skip',
+                    name: 'Tissot Circles'
+                };
+            }
+            
+            applyProjectionSettings(layout) {
+                switch(this.currentProjection) {
+                    case 'orthographic':
+                        layout.geo.projection.scale = 1;
+                        break;
+                    case 'stereographic':
+                        layout.geo.projection.scale = 1;
+                        break;
+                    case 'azimuthal equal area':
+                    case 'azimuthal equidistant':
+                    case 'gnomonic':
+                        layout.geo.projection.scale = 1;
+                        break;
+                    case 'albers':
+                    case 'conic equal area':
+                        layout.geo.projection.parallels = [20, 60];
+                        break;
+                    case 'mollweide':
+                    case 'hammer':
+                    case 'eckert4':
+                    case 'robinson':
+                    case 'sinusoidal':
+                    case 'winkel tripel':
+                        layout.geo.projection.scale = 1;
+                        break;
+                }
+            }
+            
+            getProjectionDisplayName(projection) {
+                const names = {
+                    'natural earth': 'Natural Earth',
+                    'mercator': 'Mercator',
+                    'orthographic': 'Orthographic',
+                    'stereographic': 'Stereographic',
+                    'equirectangular': 'Equirectangular',
+                    'azimuthal equal area': 'Azimuthal Equal Area',
+                    'azimuthal equidistant': 'Azimuthal Equidistant',
+                    'albers': 'Albers Equal Area',
+                    'conic equal area': 'Conic Equal Area',
+                    'gnomonic': 'Gnomonic',
+                    'mollweide': 'Mollweide',
+                    'hammer': 'Hammer',
+                    'eckert4': 'Eckert IV',
+                    'robinson': 'Robinson',
+                    'miller': 'Miller',
+                    'sinusoidal': 'Sinusoidal',
+                    'winkel tripel': 'Winkel Tripel'
+                };
+                return names[projection] || projection;
+            }
+            
+            updateInfo() {
+                const projectionMap = {
+                    'natural earth': 'geoNaturalEarth1',
+                    'mercator': 'geoMercator',
+                    'orthographic': 'geoOrthographic',
+                    'stereographic': 'geoStereographic',
+                    'equirectangular': 'geoEquirectangular',
+                    'azimuthal equal area': 'geoAzimuthalEqualArea',
+                    'azimuthal equidistant': 'geoAzimuthalEquidistant',
+                    'albers': 'geoAlbers',
+                    'conic equal area': 'geoConicEqualArea',
+                    'gnomonic': 'geoGnomonic',
+                    'mollweide': 'geoMollweide',
+                    'hammer': 'geoHammer',  // Note: Hammer may not be in data file
+                    'eckert4': 'geoEckert4',
+                    'robinson': 'geoRobinson',
+                    'miller': 'geoMiller',
+                    'sinusoidal': 'geoSinusoidal',
+                    'winkel tripel': 'geoWinkel3'
+                };
+                
+                const dataKey = projectionMap[this.currentProjection];
+                
+                // Check if projectionData is loaded
+                if (typeof projectionData === 'undefined') {
+                    console.error('projections-data.js not loaded');
+                    document.getElementById('projection-name').textContent = 'Data Loading Error';
+                    document.getElementById('projection-info').innerHTML = '<p style="color: red;">Error: Projection data file not loaded. Please check that projections-data.js is available.</p>';
+                    return;
+                }
+                
+                const data = projectionData[dataKey];
+                
+                if (data) {
+                    document.getElementById('projection-name').textContent = data.name;
+                    
+                    const infoDiv = document.getElementById('projection-info');
+                    infoDiv.innerHTML = `
+                        <p><strong>Description:</strong> ${data.description}</p>
+                        <p><strong>Creator:</strong> ${data.creator} (${data.year})</p>
+                        <p><strong>Type:</strong> ${data.type}</p>
+                        <p><strong>Use Case:</strong> ${data.useCase}</p>
+                    `;
+                    
+                    const propertiesList = document.getElementById('properties-list');
+                    propertiesList.innerHTML = data.properties
+                        .map(prop => `<li>${prop}</li>`)
+                        .join('');
+                    
+                    // Display mathematical formula if available
+                    const formulaSection = document.getElementById('formula-section');
+                    if (data.formula) {
+                        formulaSection.innerHTML = `
+                            <div class="formula-description">${data.formula.description}</div>
+                            ${data.formula.equations.map(eq => `<div class="formula-equation">${eq}</div>`).join('')}
+                            <div class="formula-variables">Where: ${data.formula.variables}</div>
+                        `;
+                    } else {
+                        formulaSection.innerHTML = `
+                            <div class="formula-description">Mathematical formula not yet available for this projection.</div>
+                            <div style="font-size: 0.85rem; color: #666; margin-top: 8px;">
+                                This projection may use complex mathematical transformations or proprietary algorithms.
+                            </div>
+                        `;
+                    }
+                } else {
+                    // Handle missing projection data
+                    console.warn('No data found for projection:', this.currentProjection, 'mapped to:', dataKey);
+                    document.getElementById('projection-name').textContent = this.getProjectionDisplayName(this.currentProjection);
+                    
+                    const infoDiv = document.getElementById('projection-info');
+                    infoDiv.innerHTML = `
+                        <p><strong>Description:</strong> Information for this projection is not yet available.</p>
+                        <p><strong>Type:</strong> Geographic projection</p>
+                        <p><strong>Status:</strong> Data pending</p>
+                    `;
+                    
+                    const propertiesList = document.getElementById('properties-list');
+                    propertiesList.innerHTML = '<li>Projection properties data not available</li>';
+                    
+                    const formulaSection = document.getElementById('formula-section');
+                    formulaSection.innerHTML = `
+                        <div class="formula-description">Mathematical formula not available for this projection.</div>
+                        <div style="font-size: 0.85rem; color: #666; margin-top: 8px;">
+                            Data for this projection is being prepared and will be added in a future update.
+                        </div>
+                    `;
+                }
+            }
+            
+            updateStats() {
+                document.getElementById('current-projection').textContent = this.getProjectionDisplayName(this.currentProjection);
+                document.getElementById('current-scope').textContent = this.currentScope === 'world' ? 'World' : this.currentScope;
+                
+                const countryCount = {
+                    'world': '~195',
+                    'europe': '~50',
+                    'africa': '~54',
+                    'asia': '~48',
+                    'north america': '~23',
+                    'south america': '~12',
+                    'usa': '50 states'
+                };
+                
+                document.getElementById('visible-countries').textContent = countryCount[this.currentScope] || '~195';
+                
+                const distortionTypes = {
+                    'natural earth': 'Moderate, balanced',
+                    'mercator': 'Extreme at poles',
+                    'orthographic': 'Perspective, edge extreme',
+                    'mollweide': 'Equal area, shape distorted',
+                    'robinson': 'Compromise',
+                    'equirectangular': 'Simple, polar extreme',
+                    'albers': 'Equal area, minimal distortion'
+                };
+                
+                document.getElementById('distortion-type').textContent = distortionTypes[this.currentProjection] || 'Varies';
+            }
+            
+            initializeEventListeners() {
+                // Projection selector
+                document.getElementById('projection-select').addEventListener('change', (e) => {
+                    this.currentProjection = e.target.value;
+                    this.createMap();
+                    this.updateInfo();
+                });
+                
+                // Scope selector
+                document.getElementById('map-scope').addEventListener('change', (e) => {
+                    this.currentScope = e.target.value;
+                    this.createMap();
+                });
+                
+                // Rotation controls
+                ['lon', 'lat', 'roll'].forEach(axis => {
+                    const slider = document.getElementById(`rotation-${axis}`);
+                    const display = document.getElementById(`${axis === 'lon' ? 'lon' : axis === 'lat' ? 'lat' : 'roll'}-value`);
+                    
+                    slider.addEventListener('input', (e) => {
+                        // Only update if the change came from user interaction, not programmatic update
+                        if (document.activeElement === slider) {
+                            // Set flag to prevent event loops
+                            this.updatingFromSlider = true;
+                            
+                            // Update internal state
+                            this.rotation[axis === 'lon' ? 'lon' : axis === 'lat' ? 'lat' : 'roll'] = +e.target.value;
+                            display.textContent = e.target.value + '°';
+                            
+                            // Use Plotly.restyle for better performance instead of recreating the entire map
+                            const update = {
+                                'geo.projection.rotation': this.rotation
+                            };
+                            
+                            Plotly.restyle(this.mapDiv, {}, {}).then(() => {
+                                return Plotly.relayout(this.mapDiv, update);
+                            }).then(() => {
+                                // Clear the flag after a short delay
+                                setTimeout(() => {
+                                    this.updatingFromSlider = false;
+                                }, 100);
+                            }).catch(error => {
+                                console.error('Error updating rotation:', error);
+                                this.updatingFromSlider = false;
+                            });
+                        }
+                    });
+                });
+                
+                // Reset rotation
+                document.getElementById('reset-rotation').addEventListener('click', () => {
+                    // Set flag to prevent event loops
+                    this.updatingFromSlider = true;
+                    
+                    // Reset internal state
+                    this.rotation = { lon: 0, lat: 0, roll: 0 };
+                    
+                    // Update slider values
+                    document.getElementById('rotation-lon').value = 0;
+                    document.getElementById('rotation-lat').value = 0;
+                    document.getElementById('rotation-roll').value = 0;
+                    document.getElementById('lon-value').textContent = '0°';
+                    document.getElementById('lat-value').textContent = '0°';
+                    document.getElementById('roll-value').textContent = '0°';
+                    
+                    // Update the map
+                    const update = {
+                        'geo.projection.rotation': this.rotation
+                    };
+                    
+                    Plotly.relayout(this.mapDiv, update).then(() => {
+                        // Clear the flag after a short delay
+                        setTimeout(() => {
+                            this.updatingFromSlider = false;
+                        }, 100);
+                    }).catch(error => {
+                        console.error('Error resetting rotation:', error);
+                        this.updatingFromSlider = false;
+                    });
+                });
+                
+                // Display options
+                ['countries', 'coastlines', 'lakes', 'ocean', 'lataxis', 'lonaxis', 'tissot'].forEach(option => {
+                    document.getElementById(`show-${option}`).addEventListener('change', (e) => {
+                        this.displayOptions[option] = e.target.checked;
+                        // Automatically update the map when lake option changes for immediate feedback
+                        if (option === 'lakes') {
+                            this.updateMapDisplay();
+                        }
+                        // Also update immediately for grid options
+                        if (option === 'lataxis' || option === 'lonaxis') {
+                            this.updateMapDisplay();
+                        }
+                        // Update immediately for Tissot circles
+                        if (option === 'tissot') {
+                            this.updateMapDisplay();
+                        }
+                    });
+                });
+                
+                document.getElementById('update-display').addEventListener('click', () => {
+                    this.updateMapDisplay();
+                });
+            }
+            
+            updateMapDisplay() {
+                // Handle Tissot circles by recreating the map since they're data traces
+                if (this.displayOptions.tissot !== this.lastTissotState) {
+                    this.lastTissotState = this.displayOptions.tissot;
+                    this.createMap();
+                    return;
+                }
+                
+                // Use Plotly.restyle to update geo properties without recreating the entire map
+                const update = {
+                    'geo.showocean': this.displayOptions.ocean,
+                    'geo.showlakes': this.displayOptions.lakes,
+                    'geo.showcountries': this.displayOptions.countries,
+                    'geo.showcoastlines': this.displayOptions.coastlines,
+                    'geo.lataxis.showgrid': this.displayOptions.lataxis,
+                    'geo.lonaxis.showgrid': this.displayOptions.lonaxis
+                };
+                
+                Plotly.relayout(this.mapDiv, update).catch(error => {
+                    console.error('Error updating display options:', error);
+                    // Fallback to recreating the map if relayout fails
+                    this.createMap();
+                });
+            }
+        }
+        
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add a small delay to ensure all scripts are loaded
+            setTimeout(initializeApp, 100);
+        });
+    </script>
+</body>
+</html>

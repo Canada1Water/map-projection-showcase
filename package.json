@@ -1,0 +1,33 @@
+{
+  "name": "d3-projection-showcase",
+  "version": "1.0.0",
+  "description": "A comprehensive showcase of D3.js geographic projections with interactive controls",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "serve": "python3 -m http.server 8000",
+    "dev": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "d3",
+    "d3js",
+    "maps",
+    "projections",
+    "cartography",
+    "visualization",
+    "geography",
+    "geospatial"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/d3-projection-showcase.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/d3-projection-showcase/issues"
+  },
+  "homepage": "https://github.com/yourusername/d3-projection-showcase#readme"
+}

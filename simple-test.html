@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple D3 Map Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        #map {
+            border: 1px solid #ccc;
+            background: #f8f8f8;
+        }
+        .countries {
+            fill: #e8f4fd;
+            stroke: #4a90a4;
+            stroke-width: 0.5;
+        }
+        .sphere {
+            fill: none;
+            stroke: #4a90a4;
+            stroke-width: 1.5;
+        }
+        .graticule {
+            fill: none;
+            stroke: #ccc;
+            stroke-width: 0.5;
+        }
+        .control {
+            margin: 10px 0;
+        }
+        select {
+            padding: 5px 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Simple D3 Map Test</h1>
+        <div class="control">
+            <label for="projection">Projection: </label>
+            <select id="projection">
+                <option value="geoNaturalEarth1">Natural Earth</option>
+                <option value="geoMercator">Mercator</option>
+                <option value="geoOrthographic">Orthographic</option>
+                <option value="geoEquirectangular">Equirectangular</option>
+            </select>
+        </div>
+        <svg id="map" width="800" height="500"></svg>
+        <div id="debug"></div>
+    </div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        console.log('Starting simple map test...');
+        
+        const debug = document.getElementById('debug');
+        function log(message) {
+            console.log(message);
+            debug.innerHTML += '<p>' + message + '</p>';
+        }
+        
+        log('D3 version: ' + d3.version);
+        
+        const width = 800;
+        const height = 500;
+        
+        const svg = d3.select('#map');
+        log('SVG selected: ' + (svg.node() ? 'Success' : 'Failed'));
+        
+        // Simple world data - just basic shapes
+        const worldData = {
+            type: "FeatureCollection",
+            features: [
+                {
+                    type: "Feature",
+                    properties: { name: "North America" },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [[
+                            [-170, 70], [-50, 70], [-50, 20], [-120, 20], [-170, 30], [-170, 70]
+                        ]]
+                    }
+                },
+                {
+                    type: "Feature", 
+                    properties: { name: "South America" },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [[
+                            [-85, 15], [-35, 15], [-35, -60], [-85, -60], [-85, 15]
+                        ]]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: { name: "Europe" },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [[
+                            [-15, 75], [50, 75], [50, 35], [-15, 35], [-15, 75]
+                        ]]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: { name: "Africa" },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [[
+                            [-20, 40], [55, 40], [55, -35], [-20, -35], [-20, 40]
+                        ]]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: { name: "Asia" },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [[
+                            [50, 80], [180, 80], [180, 10], [50, 10], [50, 80]
+                        ]]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: { name: "Australia" },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [[
+                            [110, -10], [155, -10], [155, -45], [110, -45], [110, -10]
+                        ]]
+                    }
+                }
+            ]
+        };
+        
+        log('World data created with ' + worldData.features.length + ' features');
+        
+        let currentProjection = 'geoNaturalEarth1';
+        
+        function updateMap() {
+            log('Updating map with projection: ' + currentProjection);
+            
+            // Clear previous
+            svg.selectAll('*').remove();
+            
+            // Create projection
+            const projection = d3[currentProjection]()
+                .scale(150)
+                .translate([width / 2, height / 2]);
+                
+            log('Projection created: ' + (projection ? 'Success' : 'Failed'));
+            
+            const path = d3.geoPath().projection(projection);
+            log('Path generator created: ' + (path ? 'Success' : 'Failed'));
+            
+            // Add sphere
+            svg.append('path')
+                .datum({type: 'Sphere'})
+                .attr('class', 'sphere')
+                .attr('d', path);
+                
+            // Add graticule
+            const graticule = d3.geoGraticule();
+            svg.append('path')
+                .datum(graticule())
+                .attr('class', 'graticule')
+                .attr('d', path);
+            
+            // Add countries
+            svg.selectAll('.country')
+                .data(worldData.features)
+                .enter().append('path')
+                .attr('class', 'countries')
+                .attr('d', path);
+                
+            log('Map rendered with ' + worldData.features.length + ' countries');
+        }
+        
+        // Event listener
+        document.getElementById('projection').addEventListener('change', function(e) {
+            currentProjection = e.target.value;
+            updateMap();
+        });
+        
+        // Initial render
+        updateMap();
+        
+        log('Simple map test complete');
+    </script>
+</body>
+</html>

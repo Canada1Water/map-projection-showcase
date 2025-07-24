@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Projections Data</title>
+</head>
+<body>
+    <h1>Testing Projections Data Loading</h1>
+    <div id="results"></div>
+
+    <script src="projections-data.js"></script>
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function addResult(message, isError = false) {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.style.color = isError ? 'red' : 'green';
+            resultsDiv.appendChild(p);
+        }
+        
+        console.log('Testing projections data loading...');
+        
+        // Test if projectionData is defined
+        if (typeof projectionData === 'undefined') {
+            addResult('ERROR: projectionData is undefined', true);
+            console.error('projectionData is undefined');
+        } else {
+            addResult('SUCCESS: projectionData is defined');
+            console.log('projectionData is defined');
+            
+            // Test if it's an object
+            if (typeof projectionData === 'object') {
+                addResult('SUCCESS: projectionData is an object');
+                
+                // Test number of keys
+                const keys = Object.keys(projectionData);
+                addResult(`SUCCESS: projectionData has ${keys.length} projections`);
+                console.log('Projection keys:', keys);
+                
+                // Test a specific projection
+                if (projectionData.geoNaturalEarth1) {
+                    addResult('SUCCESS: geoNaturalEarth1 found');
+                    console.log('geoNaturalEarth1:', projectionData.geoNaturalEarth1);
+                } else {
+                    addResult('ERROR: geoNaturalEarth1 not found', true);
+                }
+                
+                // Test another projection
+                if (projectionData.geoMercator) {
+                    addResult('SUCCESS: geoMercator found');
+                } else {
+                    addResult('ERROR: geoMercator not found', true);
+                }
+                
+            } else {
+                addResult('ERROR: projectionData is not an object', true);
+            }
+        }
+    </script>
+</body>
+</html>

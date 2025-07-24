@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Projection Showcase - Working Version</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .controls label {
+            font-weight: 600;
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+
+        #projection-select {
+            padding: 10px 15px;
+            font-size: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .map-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 500px;
+        }
+
+        #map {
+            width: 100%;
+            height: auto;
+            max-width: 800px;
+        }
+
+        .info-panel {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            height: fit-content;
+        }
+
+        .info-panel h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .countries {
+            fill: #e8f4fd;
+            stroke: #4a90a4;
+            stroke-width: 0.5;
+            transition: fill 0.3s ease;
+        }
+
+        .countries:hover {
+            fill: #b8ddf0;
+        }
+
+        .graticule {
+            fill: none;
+            stroke: #ccc;
+            stroke-width: 0.5;
+            stroke-dasharray: 2,2;
+        }
+
+        .sphere {
+            fill: #f0f8ff;
+            stroke: #4a90a4;
+            stroke-width: 1.5;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>D3 Geo Projections Showcase</h1>
+            <p>Explore different map projections</p>
+        </header>
+
+        <div class="controls">
+            <label for="projection-select">Choose a projection:</label>
+            <select id="projection-select">
+                <option value="geoNaturalEarth1">Natural Earth</option>
+                <option value="geoMercator">Mercator</option>
+                <option value="geoOrthographic">Orthographic</option>
+                <option value="geoStereographic">Stereographic</option>
+                <option value="geoAlbers">Albers</option>
+                <option value="geoEquirectangular">Equirectangular</option>
+                <option value="geoAzimuthalEqualArea">Azimuthal Equal Area</option>
+                <option value="geoGnomonic">Gnomonic</option>
+                <option value="geoEqualEarth">Equal Earth</option>
+                <option value="geoConicEqualArea">Conic Equal Area</option>
+            </select>
+        </div>
+
+        <div class="main-content">
+            <div class="map-container">
+                <svg id="map" width="800" height="500"></svg>
+            </div>
+            
+            <div class="info-panel">
+                <h2 id="projection-name">Natural Earth</h2>
+                <div id="projection-info">
+                    <p>A pseudocylindrical map projection designed by Tom Patterson. It provides a pleasing view of the world with reasonable compromise between size and shape distortion.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        console.log('Starting working projection showcase...');
+        
+        // Projection information
+        const projectionInfo = {
+            geoNaturalEarth1: {
+                name: "Natural Earth I",
+                description: "A pseudocylindrical map projection designed by Tom Patterson. It provides a pleasing view of the world with reasonable compromise between size and shape distortion."
+            },
+            geoMercator: {
+                name: "Mercator",
+                description: "A cylindrical map projection presented by Gerardus Mercator in 1569. It preserves angles but severely distorts areas near the poles."
+            },
+            geoOrthographic: {
+                name: "Orthographic",
+                description: "Shows the Earth as it would appear from space. It's a perspective projection that gives a three-dimensional appearance."
+            },
+            geoStereographic: {
+                name: "Stereographic", 
+                description: "A conformal projection that maps the sphere onto a plane. Particularly useful for polar regions."
+            },
+            geoAlbers: {
+                name: "Albers Equal-Area Conic",
+                description: "An equal-area conic projection with two standard parallels. Good for regions with east-west extent."
+            },
+            geoEquirectangular: {
+                name: "Equirectangular",
+                description: "The simplest possible projection, mapping meridians and parallels to straight lines with constant spacing."
+            },
+            geoAzimuthalEqualArea: {
+                name: "Azimuthal Equal Area",
+                description: "Preserves area measure, making it useful for statistical mapping. Can be centered on any point."
+            },
+            geoGnomonic: {
+                name: "Gnomonic",
+                description: "A perspective projection from the center of the Earth. All great circles appear as straight lines."
+            },
+            geoEqualEarth: {
+                name: "Equal Earth",
+                description: "A modern equal-area projection designed in 2018 to provide a visually pleasing alternative to other equal-area projections."
+            },
+            geoConicEqualArea: {
+                name: "Conic Equal Area",
+                description: "A conic equal-area projection that preserves area relationships. Good for mid-latitude regions."
+            }
+        };
+        
+        // Simple world data - continents as basic shapes
+        const worldData = {
+            type: "FeatureCollection",
+            features: [
+                {
+                    type: "Feature",
+                    properties: { name: "North America" },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [[
+                            [-170, 70], [-50, 70], [-50, 20], [-120, 15], [-140, 10], [-170, 30], [-170, 70]
+                        ]]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: { name: "South America" },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [[
+                            [-85, 15], [-35, 15], [-35, -60], [-85, -60], [-85, 15]
+                        ]]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: { name: "Europe" },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [[
+                            [-15, 75], [50, 75], [50, 35], [-15, 35], [-15, 75]
+                        ]]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: { name: "Africa" },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [[
+                            [-20, 40], [55, 40], [55, -35], [-20, -35], [-20, 40]
+                        ]]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: { name: "Asia" },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [[
+                            [50, 80], [180, 80], [180, 10], [50, 10], [50, 80]
+                        ]]
+                    }
+                },
+                {
+                    type: "Feature",
+                    properties: { name: "Australia" },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [[
+                            [110, -10], [155, -10], [155, -45], [110, -45], [110, -10]
+                        ]]
+                    }
+                }
+            ]
+        };
+        
+        const width = 800;
+        const height = 500;
+        const svg = d3.select('#map');
+        
+        let currentProjection = 'geoNaturalEarth1';
+        
+        function updateMap() {
+            console.log('Updating map with:', currentProjection);
+            
+            // Clear previous
+            svg.selectAll('*').remove();
+            
+            // Get projection
+            let projectionConstructor = d3[currentProjection];
+            if (!projectionConstructor) {
+                console.error('Projection not found:', currentProjection);
+                projectionConstructor = d3.geoNaturalEarth1;
+            }
+            
+            // Create projection
+            const projection = projectionConstructor()
+                .scale(150)
+                .translate([width / 2, height / 2]);
+            
+            const path = d3.geoPath().projection(projection);
+            
+            // Add sphere outline
+            svg.append('path')
+                .datum({type: 'Sphere'})
+                .attr('class', 'sphere')
+                .attr('d', path);
+            
+            // Add graticule
+            const graticule = d3.geoGraticule();
+            svg.append('path')
+                .datum(graticule())
+                .attr('class', 'graticule')
+                .attr('d', path);
+            
+            // Add countries
+            svg.selectAll('.country')
+                .data(worldData.features)
+                .enter().append('path')
+                .attr('class', 'countries')
+                .attr('d', path)
+                .on('mouseover', function(event, d) {
+                    d3.select(this).style('fill', '#ff6b6b');
+                })
+                .on('mouseout', function(event, d) {
+                    d3.select(this).style('fill', '#e8f4fd');
+                });
+            
+            // Update info
+            const info = projectionInfo[currentProjection];
+            if (info) {
+                document.getElementById('projection-name').textContent = info.name;
+                document.getElementById('projection-info').innerHTML = '<p>' + info.description + '</p>';
+            }
+            
+            console.log('Map updated successfully');
+        }
+        
+        // Event listener
+        document.getElementById('projection-select').addEventListener('change', function(e) {
+            currentProjection = e.target.value;
+            updateMap();
+        });
+        
+        // Initial render
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing...');
+            setTimeout(updateMap, 100);
+        });
+    </script>
+</body>
+</html>
